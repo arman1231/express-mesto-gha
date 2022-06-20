@@ -11,6 +11,12 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 app.get('/', (req, res) => {
   res.send('OK');
 });
+app.use((req, res, next) => {
+  req.user = {
+    _id: '62ac37b14bc6d8d2d29a36dc',
+  };
+  next();
+});
 app.use('/users', require('./routes/users'));
 
 app.listen(PORT, () => {
