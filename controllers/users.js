@@ -11,7 +11,7 @@ module.exports.getUser = (req, res) => {
   const { userId } = req.params;
   User.find({ _id: userId })
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => res.status(500).send({ message: err }));
 };
 
 module.exports.createUser = (req, res) => {
