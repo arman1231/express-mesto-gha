@@ -20,9 +20,9 @@ module.exports.getUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err });
+        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
       } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err });
+        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
     });
 };
@@ -41,18 +41,19 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateUserInfo = (req, res) => {
-  // eslint-disable-next-line no-underscore-dangle
   const { name, about } = req.body;
-  User.updateOne(
-    // eslint-disable-next-line no-underscore-dangle
+  User.findOneAndUpdate(
     { _id: req.user._id },
     {
       $set: { name, about },
     },
+    {
+      runValidators: true,
+      new: true,
+    },
   )
     .then((user) => {
       if (!user) {
-        // eslint-disable-next-line no-underscore-dangle
         res.status(ERROR_NOT_FOUND).send({ message: `${req.user._id} not found` });
       }
       res.send({ data: user });
@@ -68,11 +69,15 @@ module.exports.updateUserInfo = (req, res) => {
 
 module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.updateOne(
+  User.findOneAndUpdate(
     // eslint-disable-next-line no-underscore-dangle
     { _id: req.user._id },
     {
       $set: { avatar },
+    },
+    {
+      runValidators: true,
+      new: true,
     },
   )
     .then((user) => {
