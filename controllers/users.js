@@ -59,7 +59,7 @@ module.exports.updateUserInfo = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_BAD_REQUEST).send({ message: err.message });
       } else {
         res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
@@ -88,7 +88,7 @@ module.exports.updateUserAvatar = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_BAD_REQUEST).send({ message: err.message });
       } else {
         res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
