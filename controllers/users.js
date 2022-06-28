@@ -55,8 +55,9 @@ module.exports.updateUserInfo = (req, res) => {
     .then((user) => {
       if (!user) {
         res.status(ERROR_NOT_FOUND).send({ message: `${req.user._id} not found` });
+      } else {
+        res.send({ data: user });
       }
-      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -82,10 +83,10 @@ module.exports.updateUserAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        // eslint-disable-next-line no-underscore-dangle
         res.status(ERROR_NOT_FOUND).send({ message: `${req.user._id} not found` });
+      } else {
+        res.send({ data: user });
       }
-      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
