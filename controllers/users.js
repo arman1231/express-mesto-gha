@@ -1,6 +1,15 @@
 /* eslint-disable quote-props */
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER_ERROR } = require('../utils/errorCodes');
+const {
+  ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER_ERROR, ERROR_UNAUTHORIZED,
+} = require('../utils/errorCodes');
+// eslint-disable-next-line import/no-unresolved
+require('dotenv').config();
+
+// console.log(process.env);
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -28,15 +37,22 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.status(201).send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
-      } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
-      }
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        email, password: hash, name, about, avatar,
+      })
+        .then((user) => res.status(201).send({ data: user }))
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+          } else {
+            res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+          }
+        });
     });
 };
 
@@ -94,5 +110,22 @@ module.exports.updateUserAvatar = (req, res) => {
       } else {
         res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user.id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      });
+      res.send({ token });
+    })
+    .catch((err) => {
+      res.status(ERROR_UNAUTHORIZED).send({ message: err.message });
     });
 };
