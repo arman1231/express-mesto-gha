@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const { ERROR_NOT_FOUND } = require('./utils/errorCodes');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -31,6 +32,7 @@ app.use('/users', require('./routes/users'));
 app.use((req, res) => {
   res.status(ERROR_NOT_FOUND).send({ message: 'Page does not exist' });
 });
+app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
