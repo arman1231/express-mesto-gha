@@ -2,44 +2,51 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {
-  ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER_ERROR, ERROR_UNAUTHORIZED,
-} = require('../utils/errorCodes');
-// eslint-disable-next-line import/no-unresolved
+const { BadRequestError } = require('../errors/bad-request-err');
+const { NotFoundError } = require('../errors/not-found-err');
+const { DuplicateError } = require('../errors/duplicate-err');
 require('dotenv').config();
 
-// console.log(process.env);
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById({ _id: userId })
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(ERROR_NOT_FOUND).send({ message: `${userId} not found` });
+        throw new NotFoundError(`${req.user._id} not found`);
       } else {
         res.send({ data: user });
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
-      } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
+  const { userId } = req.params;
+  User.findById({ _id: userId })
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(`${userId} not found`);
+      } else {
+        res.send({ data: user });
+      }
+    })
+    .catch(next);
+};
+
+module.exports.createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,
   } = req.body;
+  if (!email || !password) {
+    next(new BadRequestError('Wrong input data'));
+  }
   bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
@@ -48,15 +55,17 @@ module.exports.createUser = (req, res) => {
         .then((user) => res.status(201).send({ data: user }))
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+            next(new BadRequestError('Wrong input data'));
+          } else if (err.code === 11000) {
+            next(new DuplicateError('User already exist'));
           } else {
-            res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+            next(err);
           }
         });
     });
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   User.findOneAndUpdate(
     { _id: req.user._id },
@@ -70,24 +79,17 @@ module.exports.updateUserInfo = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_NOT_FOUND).send({ message: `${req.user._id} not found` });
+        throw new NotFoundError(`${req.user._id} not found`);
       } else {
         res.send({ data: user });
       }
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
-      } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findOneAndUpdate(
-    // eslint-disable-next-line no-underscore-dangle
     { _id: req.user._id },
     {
       $set: { avatar },
@@ -99,21 +101,21 @@ module.exports.updateUserAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_NOT_FOUND).send({ message: `${req.user._id} not found` });
+        throw new NotFoundError(`${req.user._id} not found`);
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequestError('Wrong input data'));
       } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -125,7 +127,5 @@ module.exports.login = (req, res) => {
       });
       res.send({ token });
     })
-    .catch((err) => {
-      res.status(ERROR_UNAUTHORIZED).send({ message: err.message });
-    });
+    .catch(next);
 };
