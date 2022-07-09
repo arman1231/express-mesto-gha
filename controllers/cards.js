@@ -1,15 +1,17 @@
 /* eslint-disable no-underscore-dangle */
 const Card = require('../models/card');
-const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER_ERROR } = require('../utils/errorCodes');
+const { BadRequestError } = require('../errors/bad-request-err');
+const { NotFoundError } = require('../errors/not-found-err');
+const { UnauthorizedError } = require('../errors/unauthorized-err');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message }));
+    .catch(next);
 };
 
 // eslint-disable-next-line no-unused-vars
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({
     name, link, owner: req.user._id, likes: [],
@@ -17,36 +19,36 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequestError('Wrong input data'));
       } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove({ _id: cardId })
     .then((card) => {
       if (!card) {
-        res.status(ERROR_NOT_FOUND).send({ message: `${cardId} not found` });
+        throw new NotFoundError(`${cardId} not found`);
       } else if (card.owner !== req.user._id) {
-        res.status(401).send({ message: 'Not authorized' });
+        throw new UnauthorizedError('You are not authorized to delete this card');
       } else {
         res.send({ message: 'Card deleted' });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequestError('Wrong input data'));
       } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };
 
 // eslint-disable-next-line no-unused-vars
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -54,22 +56,22 @@ module.exports.likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_NOT_FOUND).send({ message: `${req.params.cardId} not found` });
+        throw new NotFoundError(`${req.params.cardId} not found`);
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequestError('Wrong input data'));
       } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };
 
 // eslint-disable-next-line no-unused-vars
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -77,16 +79,16 @@ module.exports.dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_NOT_FOUND).send({ message: `${req.params.cardId} not found` });
+        throw new NotFoundError(`${req.params.cardId} not found`);
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequestError('Wrong input data'));
       } else {
-        res.status(ERROR_INTERNAL_SERVER_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };

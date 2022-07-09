@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const { ERROR_NOT_FOUND } = require('./utils/errorCodes');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { validateCreateUser, validateLogin } = require('./middlewares/validation');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -21,8 +22,8 @@ app.get('/', (req, res) => {
 //   };
 //   next();
 // });
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateCreateUser, createUser);
 app.use(auth);
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
