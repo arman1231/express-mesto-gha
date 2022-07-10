@@ -2,9 +2,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { BadRequestError } = require('../errors/bad-request-err');
-const { NotFoundError } = require('../errors/not-found-err');
-const { DuplicateError } = require('../errors/duplicate-err');
+const BadRequestError = require('../errors/bad-request-err');
+const NotFoundError = require('../errors/not-found-err');
+const DuplicateError = require('../errors/duplicate-err');
 require('dotenv').config();
 
 const { NODE_ENV, JWT_SECRET } = process.env;
@@ -52,7 +52,14 @@ module.exports.createUser = (req, res, next) => {
       User.create({
         email, password: hash, name, about, avatar,
       })
-        .then((user) => res.status(201).send({ data: user }))
+        .then((user) => {
+          console.log(user);
+          res.status(201).send({
+            data: {
+              name, about, avatar, email,
+            },
+          });
+        })
         .catch((err) => {
           if (err.name === 'ValidationError') {
             next(new BadRequestError('Wrong input data'));
