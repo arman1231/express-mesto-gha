@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 const Card = require('../models/card');
-const { BadRequestError } = require('../errors/bad-request-err');
-const { NotFoundError } = require('../errors/not-found-err');
-const { UnauthorizedError } = require('../errors/unauthorized-err');
+const BadRequestError = require('../errors/bad-request-err');
+const NotFoundError = require('../errors/not-found-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
