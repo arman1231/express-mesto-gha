@@ -137,5 +137,11 @@ module.exports.login = (req, res, next) => {
       });
       res.send({ token });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 401) {
+        next(new UnauthorizedError('Not authorized'));
+      } else {
+        next(err);
+      }
+    });
 };
