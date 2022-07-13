@@ -28,17 +28,21 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove({ _id: cardId })
+  Card.findById({ _id: cardId })
     .then((card) => {
       if (!card) {
-        throw new NotFoundError(`${cardId} not found`);
+        throw new NotFoundError('Card is not found');
       } else if (card.owner.toString() !== req.user._id) {
-        console.log(card);
-        console.log(card.owner);
-        console.log(req.user._id);
-        throw new ForbiddenError('You are not authorized to delete this card');
+        throw new ForbiddenError('Not authorized to remove');
       } else {
-        res.send({ message: 'Card deleted' });
+        Card.remove({ _id: cardId })
+          .then((spec) => {
+            if (!spec) {
+              throw new NotFoundError('Card is not found');
+            } else {
+              res.send({ message: 'Card deleted' });
+            }
+          });
       }
     })
     .catch((err) => {

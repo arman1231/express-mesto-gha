@@ -27,6 +27,15 @@ app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
+  if (statusCode === 404) {
+    res
+      .status(statusCode)
+      .send({
+        message: statusCode === 404
+          ? 'Page not found'
+          : message,
+      });
+  }
   res
     .status(statusCode)
     .send({
