@@ -6,7 +6,6 @@ const BadRequestError = require('../errors/bad-request-err');
 const NotFoundError = require('../errors/not-found-err');
 const DuplicateError = require('../errors/duplicate-err');
 const UnauthorizedError = require('../errors/unauthorized-err');
-require('dotenv').config();
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -45,9 +44,6 @@ module.exports.createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,
   } = req.body;
-  if (!email || !password) {
-    next(new BadRequestError('Wrong input data'));
-  }
   bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
