@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/not-found-err');
 const { validateCreateUser, validateLogin } = require('./middlewares/validation');
 
 const { PORT = 3000 } = process.env;
@@ -23,19 +24,22 @@ app.use(auth);
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
+app.use('*', auth, (req, res, next) => {
+  next(new NotFoundError('Page not found'));
+});
 app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
-  if (statusCode === 404) {
-    res
-      .status(statusCode)
-      .send({
-        message: statusCode === 404
-          ? 'Page not found'
-          : message,
-      });
-  }
+  // if (statusCode === 404) {
+  //   res
+  //     .status(statusCode)
+  //     .send({
+  //       message: statusCode === 404
+  //         ? 'Page not found'
+  //         : message,
+  //     });
+  // }
   res
     .status(statusCode)
     .send({
