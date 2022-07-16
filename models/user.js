@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs/dist/bcrypt');
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
 const isUrl = require('validator/lib/isURL');
+const { urlRegEx } = require('../middlewares/validation');
 const UnauthorizedError = require('../errors/unauthorized-err');
 
 const userSchema = new mongoose.Schema({
@@ -36,8 +37,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
-      validator: (v) => isUrl(v),
-      message: 'Incorrect link',
+      validator(v) {
+        isUrl(v, { require_protocol: true });
+        // eslint-disable-next-line no-useless-escape
+        return urlRegEx.test(v);
+      },
     },
   },
 });

@@ -59,4 +59,5 @@ module.exports = {
   validateAvatar,
   validateUserInfo,
   validateGetUser,
+  urlRegEx,
 };

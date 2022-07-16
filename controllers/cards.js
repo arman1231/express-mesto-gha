@@ -36,11 +36,18 @@ module.exports.deleteCard = (req, res, next) => {
         throw new ForbiddenError('Not authorized to remove');
       } else {
         Card.remove({ _id: cardId })
-          .then((spec) => {
-            if (!spec) {
+          .then((specificCard) => {
+            if (!specificCard) {
               throw new NotFoundError('Card is not found');
             } else {
               res.send({ message: 'Card deleted' });
+            }
+          })
+          .catch((specificCardErr) => {
+            if (specificCardErr.name === 'CastError') {
+              next(new BadRequestError('Wrong input data'));
+            } else {
+              next(specificCardErr);
             }
           });
       }
