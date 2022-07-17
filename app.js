@@ -17,9 +17,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(cookieParser());
 app.use(requestLogger);
-app.get('/', (req, res) => {
-  res.send('OK');
-});
 app.post('/signin', validateLogin, login);
 app.post('/signup', validateCreateUser, createUser);
 app.use(auth);
