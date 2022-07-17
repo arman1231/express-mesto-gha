@@ -1,5 +1,6 @@
 .env
 .nojekyll
+*.log
 # Logs
 logs
 *.log
