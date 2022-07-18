@@ -21,7 +21,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError(`${req.user._id} not found`);
       } else {
-        res.send({ data: user });
+        res.send(user);
       }
     })
     .catch(next);
@@ -34,7 +34,7 @@ module.exports.getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError(`${userId} not found`);
       } else {
-        res.send({ data: user });
+        res.send(user);
       }
     })
     .catch(next);
@@ -84,7 +84,7 @@ module.exports.updateUserInfo = (req, res, next) => {
       if (!user) {
         throw new NotFoundError(`${req.user._id} not found`);
       } else {
-        res.send({ data: user });
+        res.send(user);
       }
     })
     .catch(next);
@@ -106,7 +106,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
       if (!user) {
         throw new NotFoundError(`${req.user._id} not found`);
       } else {
-        res.send({ data: user });
+        res.send(user);
       }
     })
     .catch((err) => {

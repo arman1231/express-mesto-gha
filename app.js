@@ -1,5 +1,17 @@
 const express = require('express');
 require('dotenv').config();
+const cors = require('cors');
+
+const options = {
+  origin: [
+    'localhost:3000',
+    'http://localhost:3000',
+    'https://addressless.nomoredomains.xyz/',
+    'https://arman1231.github.io',
+  ],
+  credentials: true, // эта опция позволяет устанавливать куки
+};
+
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -12,11 +24,17 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3001 } = process.env;
 const app = express();
+app.use('*', cors(options));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(cookieParser());
 app.use(requestLogger);
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Server will fall NOW');
+  }, 0);
+});
 app.post('/signin', validateLogin, login);
 app.post('/signup', validateCreateUser, createUser);
 app.use(auth);
