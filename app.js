@@ -6,7 +6,10 @@ const options = {
   origin: [
     'localhost:3000',
     'http://localhost:3000',
-    'https://addressless.nomoredomains.xyz/',
+    'http://api.addressless.nomoredomains.xyz',
+    'https://api.addressless.nomoredomains.xyz',
+    'http://addressless.nomoredomains.xyz',
+    'https://addressless.nomoredomains.xyz',
     'https://arman1231.github.io',
   ],
   credentials: true, // эта опция позволяет устанавливать куки
