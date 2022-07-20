@@ -44,10 +44,10 @@ app.use(auth);
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
-app.use(errorLogger);
 app.use('*', auth, (req, res, next) => {
   next(new NotFoundError('Page not found'));
 });
+app.use(errorLogger);
 app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
