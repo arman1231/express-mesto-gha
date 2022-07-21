@@ -11,6 +11,8 @@ const options = {
     'http://addressless.nomoredomains.xyz',
     'https://addressless.nomoredomains.xyz',
     'https://arman1231.github.io',
+    'http://mesto.cherkharov.com',
+    'https://mesto.cherkharov.com',
   ],
   credentials: true, // эта опция позволяет устанавливать куки
 };
